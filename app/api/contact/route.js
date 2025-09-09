@@ -14,14 +14,53 @@ export async function POST(request) {
       );
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { error: 'Invalid email format' },
+        { status: 400 }
+      );
+    }
+
+    // Check if environment variables exist
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      console.error('Missing environment variables:', {
+        EMAIL_USER: !!process.env.EMAIL_USER,
+        EMAIL_PASS: !!process.env.EMAIL_PASS
+      });
+      return NextResponse.json(
+        { error: 'Server configuration error' },
+        { status: 500 }
+      );
+    }
+
     // Create transporter using Gmail
     const transporter = nodemailer.createTransporter({
       service: 'gmail',
       auth: {
-        user: process.env.EMAIL_USER, // Your email
-        pass: process.env.EMAIL_PASS, // Your app password
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
+      // Add these options for better reliability
+      secure: true,
+      requireTLS: true,
+      connectionTimeout: 60000, // 60 seconds
+      greetingTimeout: 30000, // 30 seconds
+      socketTimeout: 60000, // 60 seconds
     });
+
+    // Verify transporter configuration
+    try {
+      await transporter.verify();
+      console.log('SMTP connection verified successfully');
+    } catch (verifyError) {
+      console.error('SMTP verification failed:', verifyError);
+      return NextResponse.json(
+        { error: 'Email service configuration error' },
+        { status: 500 }
+      );
+    }
 
     // Email to yourself (notification)
     const mailToYou = {
@@ -84,9 +123,41 @@ export async function POST(request) {
       `,
     };
 
-    // Send both emails
-    await transporter.sendMail(mailToYou);
-    await transporter.sendMail(mailToSender);
+    // Send both emails with better error handling
+    try {
+      console.log('Sending notification email...');
+      await transporter.sendMail(mailToYou);
+      console.log('Notification email sent successfully');
+      
+      console.log('Sending confirmation email...');
+      await transporter.sendMail(mailToSender);
+      console.log('Confirmation email sent successfully');
+    } catch (mailError) {
+      console.error('Error sending emails:', mailError);
+      
+      // More specific error messages
+      if (mailError.code === 'EAUTH') {
+        return NextResponse.json(
+          { error: 'Email authentication failed. Please check credentials.' },
+          { status: 500 }
+        );
+      } else if (mailError.code === 'ENOTFOUND') {
+        return NextResponse.json(
+          { error: 'Email server not found. Check network connection.' },
+          { status: 500 }
+        );
+      } else if (mailError.code === 'ETIMEDOUT') {
+        return NextResponse.json(
+          { error: 'Email sending timed out. Please try again.' },
+          { status: 500 }
+        );
+      }
+      
+      return NextResponse.json(
+        { error: `Failed to send email: ${mailError.message}` },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json(
       { message: 'Email sent successfully!' },
@@ -94,9 +165,9 @@ export async function POST(request) {
     );
 
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error('Unexpected error:', error);
     return NextResponse.json(
-      { error: 'Failed to send email' },
+      { error: `Server error: ${error.message}` },
       { status: 500 }
     );
   }
