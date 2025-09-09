@@ -1,9 +1,9 @@
-// app/api/contact/route.js - Using Resend API (more reliable)
+// app/api/contact/route.js - Using Resend API
 import { NextResponse } from 'next/server';
 
 export async function POST(request) {
   console.log('=== Contact API Started (Resend) ===');
-  
+
   try {
     const body = await request.json();
     const { name, email, subject, message } = body;
@@ -27,7 +27,7 @@ export async function POST(request) {
 
     console.log('Sending email via Resend...');
 
-    // Send email using Resend API
+    // Send email to you with reply-to as the visitor’s email
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -35,8 +35,8 @@ export async function POST(request) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Portfolio Contact <onboarding@resend.dev>', // Use Resend's default
-        to: ['s-zeyad.nafea@zewailcity.edu.eg'],
+        from: 'Portfolio Contact <onboarding@resend.dev>', // Resend sandbox sender
+        to: ['zeyad.nafea.cs@gmail.com'], // always YOUR inbox
         subject: `Portfolio Contact: ${subject}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -57,7 +57,7 @@ export async function POST(request) {
             </div>
           </div>
         `,
-        reply_to: email,
+        reply_to: email, // makes reply go directly to the sender
       }),
     });
 
@@ -70,52 +70,6 @@ export async function POST(request) {
     const result = await response.json();
     console.log('Email sent successfully via Resend:', result.id);
 
-    // Send confirmation email to sender
-    try {
-      await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: 'Zeyad Mohamed Nafea <onboarding@resend.dev>',
-          to: [email],
-          subject: 'Thank you for contacting me!',
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 8px 8px 0 0;">
-                <h1 style="color: white; margin: 0; text-align: center;">Thank You!</h1>
-              </div>
-              <div style="background-color: #ffffff; padding: 30px; border-radius: 0 0 8px 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                <p style="font-size: 16px; color: #333; line-height: 1.6;">Hi ${name},</p>
-                <p style="font-size: 16px; color: #333; line-height: 1.6;">
-                  Thank you for reaching out! I've received your message about "<strong>${subject}</strong>" and I'll get back to you as soon as possible.
-                </p>
-                <div style="background-color: #f8f9fa; padding: 20px; border-left: 4px solid #22d3ee; margin: 20px 0;">
-                  <h3 style="color: #22d3ee; margin-top: 0;">Your Message:</h3>
-                  <p style="color: #555; line-height: 1.6;">${message}</p>
-                </div>
-                <p style="font-size: 16px; color: #333; line-height: 1.6;">
-                  I typically respond within 24-48 hours.
-                </p>
-                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-                  <p style="color: #666; font-size: 14px; margin: 0;">
-                    Best regards,<br>
-                    <strong>Zeyad Mohamed Nafea</strong><br>
-                    Data Science Student
-                  </p>
-                </div>
-              </div>
-            </div>
-          `,
-        }),
-      });
-    } catch (confirmError) {
-      console.error('Confirmation email failed:', confirmError);
-      // Don't fail the main request
-    }
-
     return NextResponse.json(
       { message: 'Email sent successfully!' },
       { status: 200 }
@@ -124,7 +78,7 @@ export async function POST(request) {
   } catch (error) {
     console.error('=== Email Error ===');
     console.error('Error:', error.message);
-    
+
     return NextResponse.json(
       { error: `Failed to send email: ${error.message}` },
       { status: 500 }
