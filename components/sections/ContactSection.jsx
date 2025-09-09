@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Socials from "@/components/ui/socials";
 
 const ContactSection = () => {
@@ -14,37 +14,6 @@ const ContactSection = () => {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
-  
-  // Load Giscus comments
-useEffect(() => {
-  const script = document.createElement('script');
-  script.src = 'https://giscus.app/client.js';
-  script.setAttribute('data-repo', 'Zeyad-nafea/portfolio-website');
-  script.setAttribute('data-repo-id', 'R_kgDOPsRatg');
-  script.setAttribute('data-category', 'General');
-  script.setAttribute('data-category-id', 'DIC_kwDOPsRats4CvKO8');
-  script.setAttribute('data-mapping', 'pathname');
-  script.setAttribute('data-strict', '0');
-  script.setAttribute('data-reactions-enabled', '1');
-  script.setAttribute('data-emit-metadata', '0');
-  script.setAttribute('data-input-position', 'bottom'); // Changed from 'top' to 'bottom'
-  script.setAttribute('data-theme', 'dark');
-  script.setAttribute('data-lang', 'en');
-  script.setAttribute('data-loading', 'lazy');
-  script.crossOrigin = 'anonymous';
-  script.async = true;
-
-  const giscusContainer = document.getElementById('giscus-container');
-  if (giscusContainer) {
-    giscusContainer.appendChild(script);
-  }
-
-  return () => {
-    if (giscusContainer && script.parentNode) {
-      giscusContainer.removeChild(script);
-    }
-  };
-}, []);
   
   const handleChange = (e) => {
     setFormData({
@@ -126,7 +95,7 @@ useEffect(() => {
         </p>
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         {/* Contact Information */}
         <motion.div
           initial={{ opacity: 0, x: -30 }}
@@ -267,22 +236,6 @@ useEffect(() => {
           </form>
         </motion.div>
       </div>
-
-      {/* Comments Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-        viewport={{ once: true }}
-        className="mt-16"
-      >
-        <h3 className="text-2xl font-bold text-white mb-8 text-center">
-          Comments & Reactions
-        </h3>
-        <div className="bg-gray-800/30 rounded-lg p-6 border border-gray-700">
-          <div id="giscus-container"></div>
-        </div>
-      </motion.div>
     </motion.section>
   );
 };
