@@ -1,68 +1,70 @@
-// app/api/contact/route.js
+// app/api/contact/route.js - FIXED VERSION
 import { NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
+
+// Fix the nodemailer import
+const nodemailer = require('nodemailer');
 
 export async function POST(request) {
+  console.log('=== Contact API Started ===');
+  
   try {
-    const { name, email, subject, message } = await request.json();
+    const body = await request.json();
+    console.log('Request received');
+
+    const { name, email, subject, message } = body;
 
     // Validate required fields
     if (!name || !email || !subject || !message) {
+      console.log('Missing required fields');
       return NextResponse.json(
         { error: 'All fields are required' },
         { status: 400 }
       );
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: 'Invalid email format' },
-        { status: 400 }
-      );
-    }
+    // Check environment variables
+    console.log('Environment check:', {
+      EMAIL_USER: process.env.EMAIL_USER ? 'Set ✓' : 'Missing ✗',
+      EMAIL_PASS: process.env.EMAIL_PASS ? 'Set ✓' : 'Missing ✗',
+    });
 
-    // Check if environment variables exist
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      console.error('Missing environment variables:', {
-        EMAIL_USER: !!process.env.EMAIL_USER,
-        EMAIL_PASS: !!process.env.EMAIL_PASS
-      });
+      console.error('Missing environment variables!');
       return NextResponse.json(
-        { error: 'Server configuration error' },
+        { error: 'Server configuration error - missing credentials' },
         { status: 500 }
       );
     }
 
-    // Create transporter using Gmail
+    console.log('Creating transporter...');
+    
+    // Create transporter - using the correct method
     const transporter = nodemailer.createTransporter({
       service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
-      // Add these options for better reliability
-      secure: true,
-      requireTLS: true,
-      connectionTimeout: 60000, // 60 seconds
-      greetingTimeout: 30000, // 30 seconds
-      socketTimeout: 60000, // 60 seconds
     });
 
-    // Verify transporter configuration
+    console.log('Verifying connection...');
+    
+    // Test connection
     try {
       await transporter.verify();
-      console.log('SMTP connection verified successfully');
+      console.log('SMTP verified ✓');
     } catch (verifyError) {
-      console.error('SMTP verification failed:', verifyError);
+      console.error('SMTP verification failed:', verifyError.message);
       return NextResponse.json(
-        { error: 'Email service configuration error' },
+        { 
+          error: 'Email authentication failed',
+          details: verifyError.message 
+        },
         { status: 500 }
       );
     }
 
-    // Email to yourself (notification)
+    // Email configuration
     const mailToYou = {
       from: process.env.EMAIL_USER,
       to: process.env.EMAIL_USER,
@@ -79,16 +81,10 @@ export async function POST(request) {
             <h3 style="color: #333;">Message:</h3>
             <p style="line-height: 1.6; color: #555;">${message}</p>
           </div>
-          <div style="margin-top: 20px; padding: 15px; background-color: #e3f2fd; border-radius: 8px;">
-            <p style="margin: 0; font-size: 14px; color: #1976d2;">
-              <strong>Reply to:</strong> ${email}
-            </p>
-          </div>
         </div>
       `,
     };
 
-    // Confirmation email to sender
     const mailToSender = {
       from: process.env.EMAIL_USER,
       to: email,
@@ -108,8 +104,7 @@ export async function POST(request) {
               <p style="color: #555; line-height: 1.6;">${message}</p>
             </div>
             <p style="font-size: 16px; color: #333; line-height: 1.6;">
-              I typically respond within 24-48 hours. In the meantime, feel free to check out my projects on 
-              <a href="https://github.com/Zeyad-nafea" style="color: #22d3ee; text-decoration: none;">GitHub</a>.
+              I typically respond within 24-48 hours.
             </p>
             <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
               <p style="color: #666; font-size: 14px; margin: 0;">
@@ -123,51 +118,43 @@ export async function POST(request) {
       `,
     };
 
-    // Send both emails with better error handling
+    // Send emails
+    console.log('Sending notification email...');
     try {
-      console.log('Sending notification email...');
       await transporter.sendMail(mailToYou);
-      console.log('Notification email sent successfully');
-      
-      console.log('Sending confirmation email...');
-      await transporter.sendMail(mailToSender);
-      console.log('Confirmation email sent successfully');
-    } catch (mailError) {
-      console.error('Error sending emails:', mailError);
-      
-      // More specific error messages
-      if (mailError.code === 'EAUTH') {
-        return NextResponse.json(
-          { error: 'Email authentication failed. Please check credentials.' },
-          { status: 500 }
-        );
-      } else if (mailError.code === 'ENOTFOUND') {
-        return NextResponse.json(
-          { error: 'Email server not found. Check network connection.' },
-          { status: 500 }
-        );
-      } else if (mailError.code === 'ETIMEDOUT') {
-        return NextResponse.json(
-          { error: 'Email sending timed out. Please try again.' },
-          { status: 500 }
-        );
-      }
-      
-      return NextResponse.json(
-        { error: `Failed to send email: ${mailError.message}` },
-        { status: 500 }
-      );
+      console.log('Notification sent ✓');
+    } catch (error) {
+      console.error('Notification failed:', error.message);
+      throw error;
     }
 
+    console.log('Sending confirmation email...');
+    try {
+      await transporter.sendMail(mailToSender);
+      console.log('Confirmation sent ✓');
+    } catch (error) {
+      console.error('Confirmation failed:', error.message);
+      // Continue even if confirmation fails
+    }
+
+    console.log('=== Email sent successfully ===');
+    
     return NextResponse.json(
       { message: 'Email sent successfully!' },
       { status: 200 }
     );
 
   } catch (error) {
-    console.error('Unexpected error:', error);
+    console.error('=== Error Details ===');
+    console.error('Type:', error.constructor.name);
+    console.error('Message:', error.message);
+    console.error('Stack:', error.stack);
+    
     return NextResponse.json(
-      { error: `Server error: ${error.message}` },
+      { 
+        error: 'Failed to send email',
+        details: error.message 
+      },
       { status: 500 }
     );
   }
