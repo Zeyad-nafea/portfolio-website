@@ -35,7 +35,7 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-xl xl:text-2xl text-gray-300 font-medium"
           >
-            CS Student / <span className="text-cyan-400">Data Science & Analytics</span>
+            CS Student / <span className="text-cyan-400">Data Science &amp; Analytics</span>
           </motion.h2>
 
           {/* Full Bio */}
