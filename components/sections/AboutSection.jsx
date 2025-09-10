@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image"; 
+import { TbBrandOffice } from "react-icons/tb";
 import { FaHtml5, FaNodeJs, FaGitAlt, FaPython,FaGithub,FaRegFileAlt ,FaChartBar,FaFileExcel,FaBrain} from "react-icons/fa";
 import { MdScience } from "react-icons/md";
 import { 
@@ -23,40 +24,10 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion } from "framer-motion";
 
-// ✅ Custom icons (since PowerBI + Excel don't exist in react-icons)
-const SiMicrosoftoffice = () => (
-  <Image
-    src="/assets/resume/microsoft-office-svgrepo-com.svg" // Fixed path - removed duplicate folder
-    alt="Microsoft Office"
-    width={30}
-    height={30}
-  />
-);
-const ExcelIcon = () => (
-  <Image
-    src="/assets/resume/excel-file-type-svgrepo-com.svg"
-    alt="Microsoft Excel"
-    width={30}
-    height={30}
-  />
-);
 const PowerBIIcon = () => (
-  <Image
-    src="/assets/resume/icons8-power-bi-2021.svg"
+  <img
+    src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/assets/resume/icons8-power-bi-2021.svg`}
     alt="Power BI"
-    width={30}
-    height={30}
-  />
-);
-
-const MatplotlibIcon = () => (
-  <span className="text-2xl font-bold text-orange-500">📊</span>
-);
-
-const APIIcon = () => (
-  <Image
-    src="/assets/resume/api-settings-svgrepo-com.svg" // Fixed path - removed duplicate folder
-    alt="API"
     width={30}
     height={30}
   />
@@ -189,7 +160,7 @@ const skills = {
       skills: [
         { name: "Jupyter Notebook", icon: <SiJupyter /> },
         { name: "Selenium (Web Scraping)", icon: <SiSelenium /> },
-        { name: "Microsoft Office Suite", icon: <SiMicrosoftoffice /> },
+        { name: "Microsoft Office Suite", icon: <TbBrandOffice /> },
       ]
     },
     {
