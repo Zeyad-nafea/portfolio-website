@@ -31,7 +31,7 @@ const certificates = [
     issuer: "Udacity & Egypt Digital Club",
     date: "2025",
     image: "/assets/certificates/udacity and egypt digital club certificate.jpg",
-    description: "Comprehensive data analysis program completion"
+    description: "Comprehensive data science program completion"
   }
 ];
 
