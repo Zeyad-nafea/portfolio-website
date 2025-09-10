@@ -4,6 +4,7 @@ import Image from "next/image";
 import { TbBrandOffice } from "react-icons/tb";
 import { FaHtml5, FaNodeJs, FaGitAlt, FaPython,FaGithub,FaRegFileAlt ,FaChartBar,FaFileExcel,FaBrain} from "react-icons/fa";
 import { MdScience } from "react-icons/md";
+import { FaChartSimple } from "react-icons/fa6";
 import { 
   SiGit,
   SiPython, 
@@ -23,18 +24,7 @@ import {
 } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion } from "framer-motion";
-import Image from "next/image";
 
-const PowerBIIcon = () => (
-  <Image
-    src="/assets/skills/icons8-power-bi-2021.svg"
-    alt="Power BI"
-    width={30}
-    height={30}
-  />
-);
-
-export default PowerBIIcon;
 
 
 // 🔹 Your data objects (about, experienceEducation, volunteerActivities, skills)
@@ -152,7 +142,7 @@ const skills = {
       category: "Data Analysis & Visualization",
       skills: [
         { name: "Excel", icon: <FaFileExcel /> },
-        { name: "Power BI", icon: <PowerBIIcon /> },
+        { name: "Power BI", icon: <FaChartSimple /> },
         { name: "Pandas", icon: <SiPandas /> },
         { name: "NumPy", icon: <SiNumpy /> },
         { name: "Matplotlib", icon: <FaChartBar /> },
