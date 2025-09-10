@@ -23,15 +23,19 @@ import {
 } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 const PowerBIIcon = () => (
-  <img
-    src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/assets/resume/icons8-power-bi-2021.svg`}
+  <Image
+    src="/assets/skills/icons8-power-bi-2021.svg"
     alt="Power BI"
     width={30}
     height={30}
   />
 );
+
+export default PowerBIIcon;
+
 
 // 🔹 Your data objects (about, experienceEducation, volunteerActivities, skills)
 const about = {
